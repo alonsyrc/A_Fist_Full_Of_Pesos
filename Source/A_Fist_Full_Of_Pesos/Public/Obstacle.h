@@ -10,7 +10,7 @@
  * Clase AObstacle que hereda de AActor.
  */
 UCLASS() // Macro que indica que esta es una clase de Unreal Engine.
-class A_FIST_FULL_OF_PESOS_API AObstacle : public AActor
+class  AObstacle : public AActor
 {
 	GENERATED_BODY() // Macro que genera el código estándar necesario para las clases de Unreal Engine.
 

@@ -102,20 +102,18 @@ void ASpawnLevel::SpawnLevel(bool IsFirst)
 	//	NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level10,
 	//		SpawnLocation, SpawnRotation, SpawnInfo);
 	//}
-
-	if (NewLevel)
+   // Si se generó un nuevo nivel
+	if (NewLevel != nullptr)
 	{
 		if (NewLevel->GetTrigger())
 		{
-			NewLevel->GetTrigger()->OnComponentBeginOverlap.
-				AddDynamic(this, &ASpawnLevel::OnOverlapBegin);
+			NewLevel->GetTrigger()->OnComponentBeginOverlap.AddDynamic(this, &ASpawnLevel::OnOverlapBegin);
 		}
 	}
-
-	LevelList.Add(NewLevel);
-	if (LevelList.Num() > 5)
+	if (NewLevel != nullptr)
 	{
-		LevelList.RemoveAt(0);
+		// Agrega el nuevo nivel a la lista de niveles generados
+		LevelList.Add(NewLevel);
 	}
 
 }
