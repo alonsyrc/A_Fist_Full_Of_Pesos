@@ -4,6 +4,7 @@
 #include "BaseLevel.h"
 #include "Engine.h"
 #include "Components/BoxComponent.h"
+#include "CoreMinimal.h"
 
 // Establece valores predeterminados
 ALevelSpawner::ALevelSpawner()
@@ -36,47 +37,56 @@ void ALevelSpawner::Tick(float DeltaTime)
 void ALevelSpawner::SpawnLevel(bool IsFirst)
 {
     // Establece la ubicación y rotación de generación predeterminada
+
     SpawnLocation = FVector(0.0f, 1000.0f, 0.0f);
     SpawnRotation = FRotator(0, 90, 0);
 
-    // Si no es el primer nivel, establece la ubicación de generación en base al último nivel generado
     if (!IsFirst)
     {
         ABaseLevel* LastLevel = LevelList.Last();
         SpawnLocation = LastLevel->GetSpawnLocation()->GetComponentTransform().GetTranslation();
-        SpawnRotation = FRotator(0, 90, 0);
     }
 
-    // Selecciona un nivel aleatorio para generar
-    RandomLevel = FMath::RandRange(1, 10);
+    RandomLevel = FMath::RandRange(1, 5);
     ABaseLevel* NewLevel = nullptr;
-
-    // Genera un nivel basado en el valor aleatorio
-    if (RandomLevel == 1)
+    try
     {
-        NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level1, SpawnLocation, SpawnRotation, SpawnInfo);
+        // Genera un nivel basado en el valor aleatorio
+        if (RandomLevel == 1)
+        {
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level1, SpawnLocation, SpawnRotation, SpawnInfo);
+            UE_LOG(LogTemp, Error, TEXT("L1"));
+        }
+        else if (RandomLevel == 2)
+        {
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level2, SpawnLocation, SpawnRotation, SpawnInfo);
+            UE_LOG(LogTemp, Error, TEXT("L2"));
+        }
+        else if (RandomLevel == 3)
+        {
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level3, SpawnLocation, SpawnRotation, SpawnInfo);
+            UE_LOG(LogTemp, Error, TEXT("L3"));
+        }
+        else if (RandomLevel == 4)
+        {
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level4, SpawnLocation, SpawnRotation, SpawnInfo);
+            UE_LOG(LogTemp, Error, TEXT("L4"));
+        }
+        else if (RandomLevel == 5)
+        {
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level5, SpawnLocation, SpawnRotation, SpawnInfo);
+            UE_LOG(LogTemp, Error, TEXT("L5"));
+        }
     }
-    else if (RandomLevel == 2)
+    catch (const std::exception& e)
     {
-        NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level2, SpawnLocation, SpawnRotation, SpawnInfo);
-    }
-    else if (RandomLevel == 3)
-    {
-        NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level3, SpawnLocation, SpawnRotation, SpawnInfo);
-    }
-    else if (RandomLevel == 4)
-    {
-        NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level4, SpawnLocation, SpawnRotation, SpawnInfo);
-    }
-    else if (RandomLevel == 5)
-    {
-        NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level5, SpawnLocation, SpawnRotation, SpawnInfo);
+        // Maneja cualquier otra excepción
+        UE_LOG(LogTemp, Error, TEXT("Ocurrió una excepción: %s"), *e.what());
     }
 
     // Si se generó un nuevo nivel
-    if (NewLevel)
+    if (NewLevel != nullptr)
     {
-        // Si el nuevo nivel tiene un componente de disparador, agrega una función de superposición
         if (NewLevel->GetTrigger())
         {
             NewLevel->GetTrigger()->OnComponentBeginOverlap.AddDynamic(this, &ALevelSpawner::OnOverlapBegin);
@@ -94,8 +104,7 @@ void ALevelSpawner::SpawnLevel(bool IsFirst)
 }
 
 // Función llamada cuando ocurre una superposición
-void ALevelSpawner::OnOverlapBegin(UPrimitiveComponent* OverlappepedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepREsult)
+void ALevelSpawner::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    // Genera un nuevo nivel
     SpawnLevel(false);
 }

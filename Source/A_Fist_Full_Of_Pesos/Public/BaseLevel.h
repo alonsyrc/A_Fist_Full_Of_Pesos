@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h" // Incluye la clase base AActor.
 #include "BaseLevel.generated.h" // Genera el código necesario para la clase.
 
+
+
 class UBoxComponent; // Declaración anticipada de UBoxComponent.
 
 UCLASS()

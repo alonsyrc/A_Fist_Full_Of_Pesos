@@ -6,7 +6,6 @@
 #include "CoreMinimal.h" // Incluye los componentes esenciales del motor de Unreal.
 #include "GameFramework/Actor.h" // Incluye la clase base AActor.
 #include "LevelSpawner.generated.h" // Genera el código necesario para la clase ALevelSpawner.
-
 class ABaseLevel; // Declaración anticipada de la clase ABaseLevel.
 
 /**

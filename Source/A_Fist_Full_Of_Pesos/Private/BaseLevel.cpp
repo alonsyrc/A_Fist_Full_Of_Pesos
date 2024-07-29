@@ -28,14 +28,12 @@ void ABaseLevel::Tick(float DeltaTime)
 	// Aquí puedes agregar lógica que se ejecute cada cuadro.
 }
 
-// Devuelve el componente de disparador
-UBoxComponent* ABaseLevel::GetTrigger()
+UBoxComponent * ABaseLevel::GetTrigger()
 {
-	return Trigger; // Retorna la referencia al componente Trigger.
+	return Trigger;
 }
 
-// Devuelve el componente de ubicación de generación
-UBoxComponent* ABaseLevel::GetSpawnLocation()
+UBoxComponent * ABaseLevel::GetSpawnLocation()
 {
-	return SpawnLocation; // Retorna la referencia al componente SpawnLocation.
+	return SpawnLocation;
 }

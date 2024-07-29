@@ -82,6 +82,12 @@ void ARunnerCharacter::Tick(float DeltaTime)
     tempPosition.Z = zPosition; // Mantiene la posición en Z.
 
     SideViewCamera->SetWorldLocation(tempPosition); // Establece la nueva ubicación de la cámara.
+
+    // Comprueba si la posición Z del personaje es -200
+    if (GetActorLocation().Z <= -200.0f)
+    {
+        RestartLevel(); // Llama a la función RestartLevel
+    }
 }
 
 // Llamado para vincular funcionalidades a la entrada del jugador

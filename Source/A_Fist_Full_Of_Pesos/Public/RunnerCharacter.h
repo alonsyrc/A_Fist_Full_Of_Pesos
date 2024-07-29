@@ -25,33 +25,33 @@ class A_FIST_FULL_OF_PESOS_API ARunnerCharacter : public ACharacter
 		UPROPERTY(VisibleAnywhere)
 		class UCameraComponent* SideViewCamera; // Cámara lateral.
 
-	/** Boom de la cámara que posiciona la cámara detrás del personaje */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		USpringArmComponent* CameraBoom; // Componente de boom de la cámara.
+	///** Boom de la cámara que posiciona la cámara detrás del personaje */
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	//	USpringArmComponent* CameraBoom; // Componente de boom de la cámara.
 
-	/** Cámara de seguimiento */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		UCameraComponent* FollowCamera; // Componente de cámara de seguimiento.
+	///** Cámara de seguimiento */
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	//	UCameraComponent* FollowCamera; // Componente de cámara de seguimiento.
 
-	/** Contexto de mapeo de entrada */
+	///** Contexto de mapeo de entrada */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputMappingContext* DefaultMappingContext; // Contexto de mapeo de entrada predeterminado.
 
-	/** Acción de entrada para saltar */
+	///** Acción de entrada para saltar */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputAction* JumpAction; // Acción de entrada para saltar.
 
-	/** Acción de entrada para moverse */
+	///** Acción de entrada para moverse */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputAction* MoveAction; // Acción de entrada para moverse.
 
-	/** Acción de entrada para mirar */
+	///** Acción de entrada para mirar */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputAction* LookAction; // Acción de entrada para mirar.
 
-	/** Acción de entrada para interactuar */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		UInputAction* InteractAction; // Acción de entrada para interactuar.
+	///** Acción de entrada para interactuar */
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	//	UInputAction* InteractAction; // Acción de entrada para interactuar.
 
 public:
 	// Establece los valores predeterminados para las propiedades de este personaje.
