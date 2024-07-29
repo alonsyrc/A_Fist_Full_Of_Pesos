@@ -47,35 +47,36 @@ void ALevelSpawner::SpawnLevel(bool IsFirst)
         SpawnLocation = LastLevel->GetSpawnLocation()->GetComponentTransform().GetTranslation();
     }
 
-    RandomLevel = FMath::RandRange(1, 5);
+    RandomLevel = FMath::RandRange(1, 10);
     ABaseLevel* NewLevel = nullptr;
     try
     {
         // Genera un nivel basado en el valor aleatorio
+
         if (RandomLevel == 1)
         {
-            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level1, SpawnLocation, SpawnRotation, SpawnInfo);
-            UE_LOG(LogTemp, Error, TEXT("L1"));
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level1,
+                SpawnLocation, SpawnRotation, SpawnInfo);
         }
         else if (RandomLevel == 2)
         {
-            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level2, SpawnLocation, SpawnRotation, SpawnInfo);
-            UE_LOG(LogTemp, Error, TEXT("L2"));
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level2,
+                SpawnLocation, SpawnRotation, SpawnInfo);
         }
         else if (RandomLevel == 3)
         {
-            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level3, SpawnLocation, SpawnRotation, SpawnInfo);
-            UE_LOG(LogTemp, Error, TEXT("L3"));
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level3,
+                SpawnLocation, SpawnRotation, SpawnInfo);
         }
         else if (RandomLevel == 4)
         {
-            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level4, SpawnLocation, SpawnRotation, SpawnInfo);
-            UE_LOG(LogTemp, Error, TEXT("L4"));
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level4,
+                SpawnLocation, SpawnRotation, SpawnInfo);
         }
         else if (RandomLevel == 5)
         {
-            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level5, SpawnLocation, SpawnRotation, SpawnInfo);
-            UE_LOG(LogTemp, Error, TEXT("L5"));
+            NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Level5,
+                SpawnLocation, SpawnRotation, SpawnInfo);
         }
     }
     catch (const std::exception& e)
@@ -92,9 +93,12 @@ void ALevelSpawner::SpawnLevel(bool IsFirst)
             NewLevel->GetTrigger()->OnComponentBeginOverlap.AddDynamic(this, &ALevelSpawner::OnOverlapBegin);
         }
     }
-
-    // Agrega el nuevo nivel a la lista de niveles generados
-    LevelList.Add(NewLevel);
+    if (NewLevel != nullptr)
+    {
+        // Agrega el nuevo nivel a la lista de niveles generados
+        LevelList.Add(NewLevel);
+    }
+    
 
     // Si hay más de 5 niveles generados, elimina el más antiguo
     if (LevelList.Num() > 5)
