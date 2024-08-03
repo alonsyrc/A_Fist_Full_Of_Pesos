@@ -1,9 +1,8 @@
-// Completa tu aviso de copyright en la página de Descripción de la Configuración del Proyecto.
-
 #include "RunnerCharacter.h" // Incluye la definición de la clase ARunnerCharacter.
 
 #include "Components/CapsuleComponent.h" // Incluye la clase UCapsuleComponent.
 #include "Camera/CameraComponent.h" // Incluye la clase UCameraComponent.
+#include "GameFramework/SpringArmComponent.h" // Incluye la clase USpringArmComponent.
 #include "GameFramework/CharacterMovementComponent.h" // Incluye la clase UCharacterMovementComponent.
 #include "GameFramework/Controller.h" // Incluye la clase AController.
 #include "EnhancedInputComponent.h" // Incluye la clase UEnhancedInputComponent.
@@ -12,6 +11,12 @@
 #include <WallSpike.h> // Incluye la clase AWallSpike.
 #include <Spikes.h> // Incluye la clase ASpikes.
 #include <Engine.h> // Incluye la clase UEngine.
+#include "Blueprint/UserWidget.h"
+#include "GameFramework/HUD.h"
+
+//#include "NewHUD.h" // Asegúrate de incluir el archivo de cabecera de tu Blueprint HUD
+
+
 
 // Establece valores predeterminados
 ARunnerCharacter::ARunnerCharacter()
@@ -30,12 +35,20 @@ ARunnerCharacter::ARunnerCharacter()
     bUseControllerRotationRoll = false;
     bUseControllerRotationYaw = false;
 
+    // Crea el Spring Arm para la cámara lateral.
+    SideViewCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SideViewCameraBoom"));
+    SideViewCameraBoom->SetupAttachment(RootComponent); // Adjunta el Spring Arm al Root Component del personaje
+    SideViewCameraBoom->TargetArmLength = 500.0f; // La distancia de la cámara al personaje.
+    SideViewCameraBoom->bUsePawnControlRotation = false; // La cámara no rota según el controlador del Pawn.
+    SideViewCameraBoom->SetRelativeRotation(FRotator(-20.0f, -90.0f, 0.0f)); // Ajusta la rotación del Spring Arm.
+
     // Crea la cámara lateral.
     SideViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("SideViewCamera"));
-    SideViewCamera->bUsePawnControlRotation = false;
+    SideViewCamera->SetupAttachment(SideViewCameraBoom, USpringArmComponent::SocketName); // Adjunta la cámara al final del Spring Arm.
+    SideViewCamera->bUsePawnControlRotation = false; // La cámara no rota según el controlador del Pawn.
 
     // Configura el movimiento del personaje.
-    GetCharacterMovement()->bOrientRotationToMovement = true;
+    GetCharacterMovement()->bOrientRotationToMovement = false; // No orienta la rotación al movimiento.
     GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
     GetCharacterMovement()->GravityScale = 2.0f;
     GetCharacterMovement()->AirControl = 0.8f;
@@ -46,7 +59,6 @@ ARunnerCharacter::ARunnerCharacter()
 
     // Configura la posición temporal y la posición en Z.
     tempPosition = GetActorLocation();
-    zPosition = tempPosition.Z + 300.0f;
 }
 
 // Llamado cuando el juego comienza o cuando el personaje es generado
@@ -54,12 +66,24 @@ void ARunnerCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
+    //// Crea el widget
+    //UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), BP_UI);
+
+    //// Agrega el widget a la pantalla
+    //if (Widget != nullptr)
+    //{
+    //    Widget->AddToViewport();
+    //}
+
+    //if (BP_UI_Class)
+    //{
+    //    UUserWidget* BP_UI_Widget = CreateWidget<UUserWidget>(GetWorld(), BP_UI_Class);
+    //    BP_UI_Widget->AddToViewport();
+    //}
+
     // Añade un evento de superposición.
     GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ARunnerCharacter::OnOverlapBegin);
     CanMove = true;
-
-    // Mensaje de depuración en pantalla.
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OA"));
 
     // Añadir contexto de mapeo de entrada.
     if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -76,12 +100,8 @@ void ARunnerCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // Actualiza la posición de la cámara lateral.
-    tempPosition = GetActorLocation();
-    tempPosition.X -= 850.0f; // Mueve la cámara hacia la izquierda.
-    tempPosition.Z = zPosition; // Mantiene la posición en Z.
-
-    SideViewCamera->SetWorldLocation(tempPosition); // Establece la nueva ubicación de la cámara.
+    // Actualiza la distancia recorrida
+    UpdateDistanceTraveled(DeltaTime);
 
     // Comprueba si la posición Z del personaje es -200
     if (GetActorLocation().Z <= -200.0f)
@@ -114,27 +134,23 @@ void ARunnerCharacter::Move(const FInputActionValue& Value)
 
     if (Controller != nullptr)
     {
-        // Mensaje de depuración en pantalla.
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Entra Aqui"));
-
         if (CanMove)
         {
-            // Mensaje de depuración en pantalla.
-            GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Entra Aqui tambien"));
-
             // Obtiene la rotación del controlador.
             const FRotator Rotation = Controller->GetControlRotation();
             const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-            // Obtiene el vector hacia adelante.
+            // Obtiene el vector hacia adelante basado en la rotación del controlador.
             const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-            // Obtiene el vector hacia la derecha.
+            // Obtiene el vector hacia la derecha basado en la rotación del controlador.
             const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-            // Añade el movimiento.
-            AddMovementInput(ForwardDirection, MovementVector.Y);
-            AddMovementInput(RightDirection, MovementVector.X);
+            // Añade el movimiento hacia adelante y hacia atrás.
+            AddMovementInput(RightDirection, MovementVector.Y);
+
+            // Añade el movimiento lateral.
+            AddMovementInput(ForwardDirection, MovementVector.X);
         }
     }
 }
@@ -146,7 +162,7 @@ void ARunnerCharacter::RestartLevel()
 }
 
 // Maneja las superposiciones
-void ARunnerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappepedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepREsult)
+void ARunnerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     if (OtherActor != nullptr)
     {
@@ -165,4 +181,38 @@ void ARunnerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappepedComponent
             GetWorldTimerManager().SetTimer(UnusedHandle, this, &ARunnerCharacter::RestartLevel, 2.0f, false);
         }
     }
+}
+
+void ARunnerCharacter::AddCoins(int Amount)
+{
+    Coins += Amount;
+    // Muestra un mensaje en pantalla
+    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Coins: %d"), Coins));
+}
+
+void ARunnerCharacter::UpdateDistanceTraveled(float DeltaTime)
+{
+    // Calcula la velocidad del personaje
+    FVector Velocity = GetVelocity();
+
+    // Verifica si el personaje se está moviendo hacia adelante o hacia atrás
+    if (Velocity.Y > 0) // Movimiento hacia adelante
+    {
+        // Calcula la distancia recorrida en este frame
+        float DistanceThisFrame = Velocity.Size() * DeltaTime;
+
+        // Actualiza la distancia total recorrida
+        DistanceTraveled += DistanceThisFrame;
+    }
+    else if (Velocity.Y < 0) // Movimiento hacia atrás
+    {
+        // Calcula la distancia recorrida en este frame
+        float DistanceThisFrame = Velocity.Size() * DeltaTime;
+
+        // Resta la distancia recorrida de la distancia total
+        DistanceTraveled -= DistanceThisFrame;
+    }
+
+    // Muestra un mensaje en pantalla con la distancia recorrida
+    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Distance: %d"), FMath::FloorToInt(DistanceTraveled / 100.0f)));
 }

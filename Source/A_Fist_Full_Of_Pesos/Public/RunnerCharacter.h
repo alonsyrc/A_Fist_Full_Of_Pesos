@@ -22,8 +22,14 @@ class A_FIST_FULL_OF_PESOS_API ARunnerCharacter : public ACharacter
 	GENERATED_BODY() // Macro que genera el código estándar necesario para las clases de Unreal Engine.
 
 		// Propiedades visibles en cualquier lugar
-		UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere)
 		class UCameraComponent* SideViewCamera; // Cámara lateral.
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		USpringArmComponent* SideViewCameraBoom;
+
+
+
 
 	///** Boom de la cámara que posiciona la cámara detrás del personaje */
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -61,7 +67,25 @@ protected:
 	// Llamada cuando el juego comienza o cuando el personaje es generado.
 	virtual void BeginPlay() override;
 
+
 public:
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	//	TSubclassOf<UUserWidget> BP_UI_Class;
+	// Contador de monedas
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player")
+		int Coins;
+
+	// Método para agregar monedas
+	UFUNCTION(BlueprintCallable, Category = "Player")
+		void AddCoins(int Amount);
+
+	// Variable para almacenar la distancia recorrida
+	float DistanceTraveled;
+
+	// Método para actualizar la distancia recorrida
+	void UpdateDistanceTraveled(float DeltaTime);
+
+
 	// Llamada cada cuadro.
 	virtual void Tick(float DeltaTime) override;
 
@@ -96,5 +120,6 @@ public:
 private:
 	float zPosition; // Posición en el eje Z.
 	FVector tempPosition = FVector(); // Posición temporal.
+	FRotator tempRotation = FRotator();
 	bool CanMove; // Indica si el personaje puede moverse.
 };

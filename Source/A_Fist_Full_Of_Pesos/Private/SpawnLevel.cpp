@@ -6,7 +6,7 @@
 #include "BaseLevel.h"
 #include "Engine.h"
 #include "Components/BoxComponent.h"
-
+#include "RunnerCharacter.h"
 
 // Sets default values
 ASpawnLevel::ASpawnLevel()
@@ -120,6 +120,9 @@ void ASpawnLevel::SpawnLevel(bool IsFirst)
 
 void ASpawnLevel::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	SpawnLevel(false);
+	if (OtherActor->IsA(ARunnerCharacter::StaticClass()))
+	{
+		SpawnLevel(false);
+	}	
 }
 
