@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h" // Incluye los componentes esenciales del motor de Unreal.
 #include "GameFramework/Character.h" // Incluye la clase base ACharacter.
+#include "Components/TextBlock.h"
 #include "RunnerCharacter.generated.h" // Genera el código necesario para la clase ARunnerCharacter.
 
 // Declaración de clases y estructuras
@@ -28,17 +29,6 @@ class A_FIST_FULL_OF_PESOS_API ARunnerCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		USpringArmComponent* SideViewCameraBoom;
 
-
-
-
-	///** Boom de la cámara que posiciona la cámara detrás del personaje */
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	//	USpringArmComponent* CameraBoom; // Componente de boom de la cámara.
-
-	///** Cámara de seguimiento */
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	//	UCameraComponent* FollowCamera; // Componente de cámara de seguimiento.
-
 	///** Contexto de mapeo de entrada */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputMappingContext* DefaultMappingContext; // Contexto de mapeo de entrada predeterminado.
@@ -55,22 +45,29 @@ class A_FIST_FULL_OF_PESOS_API ARunnerCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputAction* LookAction; // Acción de entrada para mirar.
 
-	///** Acción de entrada para interactuar */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//	UInputAction* InteractAction; // Acción de entrada para interactuar.
-
 public:
-	// Establece los valores predeterminados para las propiedades de este personaje.
-	ARunnerCharacter();
+	// Declaración de la función PlayJumpSound
+	UFUNCTION()
+		void PlayJumpSound(const FInputActionValue& Value);
 
-protected:
-	// Llamada cuando el juego comienza o cuando el personaje es generado.
-	virtual void BeginPlay() override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+		USoundBase* RestartSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+		USoundBase* CoinSound;
 
-public:
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	//	TSubclassOf<UUserWidget> BP_UI_Class;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+		USoundBase* JumpSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+		UTextBlock* TextBlockDistancia;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+		UTextBlock* TextBlockPesos;
+
+	// Declaración de la variable para el widget
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+		TSubclassOf<UUserWidget> BP_UI_Ref;
 	// Contador de monedas
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player")
 		int Coins;
@@ -85,25 +82,14 @@ public:
 	// Método para actualizar la distancia recorrida
 	void UpdateDistanceTraveled(float DeltaTime);
 
-
 	// Llamada cada cuadro.
 	virtual void Tick(float DeltaTime) override;
+
+	void ResetSound(USoundBase* sound);
 
 	// Llamada para vincular funcionalidades a la entrada del jugador.
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
-	/** Llamada para la entrada de movimiento */
-	void Move(const FInputActionValue& Value);
-
-	/** Llamada para la entrada de mirar */
-	//void Look(const FInputActionValue& Value);
-
-	/** Llamada para la entrada de interactuar */
-	//void Interact(const FInputActionValue& Value);
-	//void MoveRight(float value);
-
-public:
 	// Obtiene el componente de la cámara lateral.
 	class UCameraComponent* GetSideViewCameraComponent() const
 	{
@@ -113,9 +99,25 @@ public:
 	// Reinicia el nivel.
 	void RestartLevel();
 
+	void DelayedRestartLevel();
+
+	void RestartLevelDelayed();
+
 	// Llamada cuando ocurre una superposición.
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappepedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepREsult);
+	
+	// Establece los valores predeterminados para las propiedades de este personaje.
+	ARunnerCharacter();
+
+
+
+protected:
+	/** Llamada para la entrada de movimiento */
+	void Move(const FInputActionValue& Value);
+
+	// Llamada cuando el juego comienza o cuando el personaje es generado.
+	virtual void BeginPlay() override;
 
 private:
 	float zPosition; // Posición en el eje Z.

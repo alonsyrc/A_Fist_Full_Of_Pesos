@@ -1,5 +1,5 @@
 #include "RunnerCharacter.h" // Incluye la definición de la clase ARunnerCharacter.
-
+#include "RunnerCharacter.h"
 #include "Components/CapsuleComponent.h" // Incluye la clase UCapsuleComponent.
 #include "Camera/CameraComponent.h" // Incluye la clase UCameraComponent.
 #include "GameFramework/SpringArmComponent.h" // Incluye la clase USpringArmComponent.
@@ -13,20 +13,15 @@
 #include <Engine.h> // Incluye la clase UEngine.
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/HUD.h"
-
-//#include "NewHUD.h" // Asegúrate de incluir el archivo de cabecera de tu Blueprint HUD
-
-
+#include "CustomWidget.h"
 
 // Establece valores predeterminados
 ARunnerCharacter::ARunnerCharacter()
 {
     // Configura este personaje para llamar a Tick() cada cuadro. Puedes desactivar esto para mejorar el rendimiento si no lo necesitas.
     PrimaryActorTick.bCanEverTick = true;
-
     // Inicializa el tamaño del cápsula de colisión.
     GetCapsuleComponent()->InitCapsuleSize(42.0f, 96.0f);
-
     // Configura la respuesta de colisión.
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
 
@@ -66,20 +61,30 @@ void ARunnerCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    //// Crea el widget
-    //UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), BP_UI);
+    // Crea una instancia del widget personalizado
+    UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), BP_UI_Ref);
 
-    //// Agrega el widget a la pantalla
-    //if (Widget != nullptr)
-    //{
-    //    Widget->AddToViewport();
-    //}
+    // Agrega el widget al viewport
+    if (Widget)
+    {
+        Widget->AddToViewport();
 
-    //if (BP_UI_Class)
-    //{
-    //    UUserWidget* BP_UI_Widget = CreateWidget<UUserWidget>(GetWorld(), BP_UI_Class);
-    //    BP_UI_Widget->AddToViewport();
-    //}
+        // Encuentra el TextBlock en el widget
+        TextBlockDistancia = Cast<UTextBlock>(Widget->GetWidgetFromName("TextBlockDistancia"));
+        TextBlockPesos = Cast<UTextBlock>(Widget->GetWidgetFromName("TextBlockPesos"));
+
+        // Verifica si el TextBlock fue encontrado
+        if (TextBlockDistancia)
+        {
+            // Establece el texto del TextBlock
+            TextBlockDistancia->SetText(FText::FromString("Distancia"));
+        }
+        if (TextBlockPesos)
+        {
+            // Establece el texto del TextBlock
+            TextBlockPesos->SetText(FText::FromString("0"));
+        }
+    }
 
     // Añade un evento de superposición.
     GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ARunnerCharacter::OnOverlapBegin);
@@ -104,9 +109,42 @@ void ARunnerCharacter::Tick(float DeltaTime)
     UpdateDistanceTraveled(DeltaTime);
 
     // Comprueba si la posición Z del personaje es -200
+    if (GetActorLocation().Z <= -20.0f)
+    {
+        // Reproduce el sonido de reinicio  
+        ResetSound(RestartSound);
+    }
     if (GetActorLocation().Z <= -200.0f)
     {
-        RestartLevel(); // Llama a la función RestartLevel
+        DelayedRestartLevel(); // Llama a la función RestartLevel
+    }
+}
+
+void ARunnerCharacter::ResetSound(USoundBase* sound)
+{
+    if (sound != nullptr) // Verifica si el sonido no es nulo
+    {
+        UAudioComponent* AudioComponent = Cast<UAudioComponent>(GetComponentByClass(UAudioComponent::StaticClass()));
+        if (AudioComponent)
+        {
+            if (!AudioComponent->IsPlaying()) // Verifica si el componente de audio no está reproduciendo un sonido
+            {
+                FString soundName = sound->GetName(); // Obtiene el nombre del sonido
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Sonido: %s"), *soundName));
+                AudioComponent->SetSound(sound);
+                AudioComponent->Play();
+            }
+            else
+            {
+                // Maneja el caso en el que el componente de audio ya está reproduciendo un sonido
+                UE_LOG(LogTemp, Warning, TEXT("Sonido ya está reproduciéndose"));
+            }
+        }
+    }
+    else
+    {
+        // Maneja el caso en el que el sonido es nulo
+        UE_LOG(LogTemp, Warning, TEXT("Sonido nulo"));
     }
 }
 
@@ -120,6 +158,7 @@ void ARunnerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
     {
         // Saltar
         EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+        EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ARunnerCharacter::PlayJumpSound);
         EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
         // Mover
@@ -156,7 +195,21 @@ void ARunnerCharacter::Move(const FInputActionValue& Value)
 }
 
 // Reinicia el nivel
+void ARunnerCharacter::DelayedRestartLevel()
+{
+    // Establece un temporizador para reiniciar el nivel después de 2 segundos
+    FTimerHandle UnusedHandle;
+    GetWorldTimerManager().SetTimer(UnusedHandle, this, &ARunnerCharacter::RestartLevelDelayed, 2.0f, false);
+}
+
 void ARunnerCharacter::RestartLevel()
+{
+    ResetSound(RestartSound);
+    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName())); // Reinicia el nivel actual.
+}
+
+// Función que reinicia el nivel después del delay
+void ARunnerCharacter::RestartLevelDelayed()
 {
     UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName())); // Reinicia el nivel actual.
 }
@@ -186,8 +239,30 @@ void ARunnerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, 
 void ARunnerCharacter::AddCoins(int Amount)
 {
     Coins += Amount;
+
+    if (TextBlockPesos)
+    {
+        // Establece el texto del TextBlock
+        TextBlockPesos->SetText(FText::FromString(FString::Printf(TEXT("%d"), Coins)));
+    }
+
+    // Reproduce el sonido de coin
+    ResetSound(CoinSound);
     // Muestra un mensaje en pantalla
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Coins: %d"), Coins));
+    //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Coins: %d"), Coins));
+}
+
+void ARunnerCharacter::PlayJumpSound(const FInputActionValue& Value)
+{
+    // Obtiene el componente de audio
+    UAudioComponent* AudioComponent = Cast<UAudioComponent>(GetComponentByClass(UAudioComponent::StaticClass()));
+
+    if (AudioComponent)
+    {
+        AudioComponent->SetSound(JumpSound);
+        // Reproduce el sonido
+        AudioComponent->Play();
+    }
 }
 
 void ARunnerCharacter::UpdateDistanceTraveled(float DeltaTime)
@@ -213,6 +288,9 @@ void ARunnerCharacter::UpdateDistanceTraveled(float DeltaTime)
         DistanceTraveled -= DistanceThisFrame;
     }
 
-    // Muestra un mensaje en pantalla con la distancia recorrida
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Distance: %d"), FMath::FloorToInt(DistanceTraveled / 100.0f)));
+    if (TextBlockDistancia)
+    {
+        // Establece el texto del TextBlock
+        TextBlockDistancia->SetText(FText::FromString(FString::Printf(TEXT("%d"), FMath::FloorToInt(DistanceTraveled / 100.0f))));
+    }
 }
