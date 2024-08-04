@@ -47,10 +47,10 @@ ARunnerCharacter::ARunnerCharacter()
     GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
     GetCharacterMovement()->GravityScale = 2.0f;
     GetCharacterMovement()->AirControl = 0.8f;
-    GetCharacterMovement()->JumpZVelocity = 1000.0f;
+    GetCharacterMovement()->JumpZVelocity = 1050.0f;
     GetCharacterMovement()->GroundFriction = 3.0f;
     GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-    GetCharacterMovement()->MaxFlySpeed = 600.0f;
+    GetCharacterMovement()->MaxFlySpeed = 650.0f;
 
     // Configura la posición temporal y la posición en Z.
     tempPosition = GetActorLocation();
@@ -259,6 +259,8 @@ void ARunnerCharacter::PlayJumpSound(const FInputActionValue& Value)
 
     if (AudioComponent)
     {
+        FString soundName = JumpSound->GetName(); // Obtiene el nombre del sonido
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Sonido: %s"), *soundName));
         AudioComponent->SetSound(JumpSound);
         // Reproduce el sonido
         AudioComponent->Play();

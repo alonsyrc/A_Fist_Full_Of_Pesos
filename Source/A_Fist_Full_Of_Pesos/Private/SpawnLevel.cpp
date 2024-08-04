@@ -40,13 +40,14 @@ void ASpawnLevel::Tick(float DeltaTime)
 void ASpawnLevel::SpawnLevel(bool IsFirst)
 {
 
-	SpawnLocation = FVector(0.0f, 1000.0f, 0.0f);
+	SpawnOffset = FMath::RandRange(SpawnOffsetMin, SpawnOffsetMax);
+	SpawnLocation = FVector(0.0f, SpawnOffset, 0.0f);
 	SpawnRotation = FRotator(0, 90, 0);
 
 	if (!IsFirst)
 	{
 		ABaseLevel* LastLevel = LevelList.Last();
-		SpawnLocation = LastLevel->GetSpawnLocation()->GetComponentTransform().GetTranslation();
+		SpawnLocation += LastLevel->GetSpawnLocation()->GetComponentTransform().GetTranslation();
 	}
 
 	RandomLevel = FMath::RandRange(1, 5);

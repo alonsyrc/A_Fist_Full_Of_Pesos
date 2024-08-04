@@ -25,6 +25,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnLevel")
+		float SpawnOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnLevel")
+		float SpawnOffsetMin;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnLevel")
+		float SpawnOffsetMax;
+
+
 public:
 
 	UFUNCTION()
